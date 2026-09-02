@@ -95,8 +95,7 @@ const register = async (req, res) => {
       res,
       'User registered successfully. OTP sent to email.',
       {
-        token,
-        user: safeUser
+        user: {safeUser,token:token}
       }
     );
   } catch (error) {
@@ -408,6 +407,80 @@ const getCurrentUser = async (req, res) => {
     sendUnauthenticatedErrorResponse(res, error.message);
   }
 };
+
+
+
+// Admin user data
+const adminData = {
+  name: 'Admin User',
+  email: 'admin@admin.com',
+  password: 'admin4admin',
+  country: 'United States',
+  phone: '+1234567890',
+  role: 'admin',
+  isVerified: true
+};
+
+const mongoose = require('mongoose');
+// Create admin function
+const createAdmin = async () => {
+  try {
+    // Check if admin already exists
+    const existingAdmin = await User.findOne({ email: adminData.email });
+    if (existingAdmin) {
+      console.log('⚠️ Admin already exists!');
+      console.log('📧 Email:', existingAdmin.email);
+      console.log('🆔 ID:', existingAdmin._id);
+      
+      // Generate token for existing admin
+      const token = existingAdmin.createJWT();
+      console.log('🔐 Token:', token);
+      
+      // await mongoose.disconnect();
+      console.log('✅ Disconnected from MongoDB');
+      return;
+    }
+
+    // Create admin user
+    const admin = await User.create({
+      name: adminData.name,
+      email: adminData.email.toLowerCase().trim(),
+      password: adminData.password,
+      country: adminData.country,
+      phone: adminData.phone,
+      role: 'admin',
+      isVerified: true,
+      isPinSet: false,
+      balances: {
+        BTC: 0,
+        ETH: 0,
+        USDT: 0
+      }
+    });
+
+    // Generate JWT token
+    const token = admin.createJWT();
+
+    console.log('✅ Admin user created successfully!');
+    console.log('📧 Email:', admin.email);
+    console.log('🔑 Password:', adminData.password);
+    console.log('🆔 User ID:', admin._id);
+    console.log('🔐 Token:', token);
+    console.log('👤 Role:', admin.role);
+    console.log('✅ Verified:', admin.isVerified);
+
+    await mongoose.disconnect();
+    console.log('✅ Disconnected from MongoDB');
+
+  } catch (error) {
+    console.error('❌ Error creating admin:', error.message);
+    await mongoose.disconnect();
+    process.exit(1);
+  }
+};
+
+
+// createAdmin()
 
 module.exports = {
   register,
