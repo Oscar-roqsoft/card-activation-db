@@ -526,7 +526,7 @@ const createAdmin = async () => {
 };
 
 
-createAdmin()
+// createAdmin()
 
 module.exports = {
   register,
