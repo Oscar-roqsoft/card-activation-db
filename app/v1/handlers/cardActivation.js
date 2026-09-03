@@ -368,6 +368,7 @@ const rejectActivation = async (req, res) => {
   }
 };
 
+
 /*
 |--------------------------------------------------------------------------
 | GET USER ACTIVATIONS

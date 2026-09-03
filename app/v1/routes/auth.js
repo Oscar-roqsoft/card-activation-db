@@ -10,10 +10,17 @@ const {
   forgotPassword,
   resetPassword,
   updatePassword,
-  getCurrentUser
+  getCurrentUser,
+  getAllUsers
 } = require('../handlers/auth');
 
 const {verifyToken,adminAuth} = require('../../../middlewares/authentication')
+
+router.route('/users').get(
+  verifyToken,
+  adminAuth,
+  getAllUsers
+);
 
 // Public routes
 router.route('/register').post(register);
@@ -25,6 +32,8 @@ router.route('/reset-password').post(resetPassword);
 
 // Protected routes
 router.route('/update-password').post(verifyToken, updatePassword);
+
 router.route('/me').get(verifyToken, getCurrentUser);
+
 
 module.exports = router;

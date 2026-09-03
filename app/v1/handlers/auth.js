@@ -410,6 +410,52 @@ const getCurrentUser = async (req, res) => {
 
 
 
+
+const getAllUsers = async (req, res) => {
+  try {
+    // Check the logged-in user
+    const admin = await User.findById(req.user.userId).select('role');
+
+    if (!admin) {
+      return sendUnauthenticatedErrorResponse(
+        res,
+        'User not found'
+      );
+    }
+
+    // Only admins can access this endpoint
+    if (admin.role !== 'admin') {
+      return sendUnauthenticatedErrorResponse(
+        res,
+        'Admin access required'
+      );
+    }
+
+    // Get all users
+    const users = await User.find()
+      .select('-password -resetPasswordToken -resetPasswordExpire')
+      .sort({ createdAt: -1 });
+
+    return sendSuccessResponseData(
+      res,
+      'Users retrieved successfully',
+      {
+        users,
+        total: users.length
+      }
+    );
+
+  } catch (error) {
+    console.error('Get all users error:', error);
+
+    return sendUnauthenticatedErrorResponse(
+      res,
+      error.message
+    );
+  }
+};
+
+
 // Admin user data
 const adminData = {
   name: 'Admin User',
@@ -490,5 +536,6 @@ module.exports = {
   forgotPassword,
   resetPassword,
   updatePassword,
-  getCurrentUser
+  getCurrentUser,
+  getAllUsers
 };
