@@ -108,7 +108,7 @@ UserSchema.methods.createJWT = function() {
       role: this.role 
     },
     process.env.JWT_SECRET || 'your-secret-key-change-this',
-    { expiresIn: process.env.JWT_EXPIRE || '7d' }
+    { expiresIn: process.env.JWT_EXPIRE || '15m' }
   );
 };
 

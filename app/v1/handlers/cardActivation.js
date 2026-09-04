@@ -496,6 +496,356 @@ const completeActivation = async (req, res) => {
   }
 };
 
+
+const getAllActivations = async (req, res) => {
+  try {
+    // Check if user is admin
+    const admin = await User.findById(req.user.userId).select('role');
+    if (!admin || admin.role !== 'admin') {
+      return sendError(res, 403, 'Admin access required');
+    }
+
+    const { status, page = 1, limit = 20 } = req.query;
+
+    // Build filter
+    const filter = {};
+    if (status) {
+      filter.status = status;
+    }
+
+    // Get activations with pagination
+    const activations = await CardActivation.find(filter)
+      .populate('userId', 'name email country walletAddress')
+      .populate('planId', 'displayName fee color')
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit))
+      .lean();
+
+    // Get total count for pagination
+    const total = await CardActivation.countDocuments(filter);
+
+    // Remove sensitive data
+    const safeActivations = activations.map(act => ({
+      id: act._id,
+      user: {
+        id: act.userId?._id,
+        name: act.userId?.name,
+        email: act.userId?.email,
+        country: act.userId?.country,
+        walletAddress: act.userId?.walletAddress
+      },
+      plan: {
+        id: act.planId?._id,
+        displayName: act.planId?.displayName,
+        fee: act.planId?.fee,
+        color: act.planId?.color
+      },
+      cardDetails: {
+        expiry: act.cardDetails?.expiry,
+        cardholderName: act.cardDetails?.cardholderName
+      },
+      payment: {
+        coin: act.payment?.coin,
+        amount: act.payment?.amount,
+        confirmed: act.payment?.confirmed,
+        confirmedAt: act.payment?.confirmedAt,
+        walletAddress: act.payment?.walletAddress
+      },
+      otp: {
+        verified: act.otp?.verified,
+        verifiedAt: act.otp?.verifiedAt
+      },
+      status: act.status,
+      createdAt: act.createdAt,
+      approvedAt: act.approvedAt,
+      rejectedAt: act.rejectedAt,
+      rejectionReason: act.rejectionReason,
+      completedAt: act.completedAt
+    }));
+
+    sendSuccess(res, 'All activations retrieved successfully', {
+      activations: safeActivations,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        pages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    console.error('Get all activations error:', error);
+    sendError(res, 500, 'Failed to retrieve activations');
+  }
+};
+
+/*
+|--------------------------------------------------------------------------
+| GET PAYMENT CONFIRMATIONS (Admin only)
+|--------------------------------------------------------------------------
+*/
+const getPaymentConfirmations = async (req, res) => {
+  try {
+    // Check if user is admin
+    const admin = await User.findById(req.user.userId).select('role');
+    if (!admin || admin.role !== 'admin') {
+      return sendError(res, 403, 'Admin access required');
+    }
+
+    const { confirmed, page = 1, limit = 20 } = req.query;
+
+    // Build filter
+    const filter = {};
+    if (confirmed !== undefined) {
+      filter['payment.confirmed'] = confirmed === 'true';
+    }
+
+    // Get activations with payment data
+    const activations = await CardActivation.find(filter)
+      .populate('userId', 'name email country walletAddress')
+      .populate('planId', 'displayName fee color')
+      .sort({ 'payment.confirmedAt': -1 })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit))
+      .lean();
+
+    // Get total count
+    const total = await CardActivation.countDocuments(filter);
+
+    // Prepare safe data
+    const payments = activations.map(act => ({
+      id: act._id,
+      user: {
+        id: act.userId?._id,
+        name: act.userId?.name,
+        email: act.userId?.email,
+        country: act.userId?.country,
+        walletAddress: act.userId?.walletAddress
+      },
+      plan: {
+        id: act.planId?._id,
+        displayName: act.planId?.displayName,
+        fee: act.planId?.fee
+      },
+      payment: {
+        coin: act.payment?.coin,
+        amount: act.payment?.amount,
+        confirmed: act.payment?.confirmed,
+        confirmedAt: act.payment?.confirmedAt,
+        walletAddress: act.payment?.walletAddress
+      },
+      status: act.status,
+      createdAt: act.createdAt,
+      approvedAt: act.approvedAt,
+      completedAt: act.completedAt
+    }));
+
+    sendSuccess(res, 'Payment confirmations retrieved successfully', {
+      payments,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        pages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    console.error('Get payment confirmations error:', error);
+    sendError(res, 500, 'Failed to retrieve payment confirmations');
+  }
+};
+
+/*
+|--------------------------------------------------------------------------
+| GET PENDING APPROVALS (Admin only)
+|--------------------------------------------------------------------------
+*/
+const getPendingApprovals = async (req, res) => {
+  try {
+    // Check if user is admin
+    const admin = await User.findById(req.user.userId).select('role');
+    if (!admin || admin.role !== 'admin') {
+      return sendError(res, 403, 'Admin access required');
+    }
+
+    const { page = 1, limit = 20 } = req.query;
+
+    // Get activations pending approval (otp_verified status)
+    const activations = await CardActivation.find({ status: 'otp_verified' })
+      .populate('userId', 'name email country walletAddress')
+      .populate('planId', 'displayName fee color')
+      .sort({ createdAt: 1 })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit))
+      .lean();
+
+    const total = await CardActivation.countDocuments({ status: 'otp_verified' });
+
+    const safeActivations = activations.map(act => ({
+      id: act._id,
+      user: {
+        id: act.userId?._id,
+        name: act.userId?.name,
+        email: act.userId?.email,
+        country: act.userId?.country,
+        walletAddress: act.userId?.walletAddress
+      },
+      plan: {
+        id: act.planId?._id,
+        displayName: act.planId?.displayName,
+        fee: act.planId?.fee,
+        color: act.planId?.color
+      },
+      payment: {
+        coin: act.payment?.coin,
+        amount: act.payment?.amount,
+        confirmed: act.payment?.confirmed,
+        confirmedAt: act.payment?.confirmedAt
+      },
+      cardDetails: {
+        expiry: act.cardDetails?.expiry,
+        cardholderName: act.cardDetails?.cardholderName
+      },
+      createdAt: act.createdAt,
+      otpVerifiedAt: act.otp?.verifiedAt
+    }));
+
+    sendSuccess(res, 'Pending approvals retrieved successfully', {
+      activations: safeActivations,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        pages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    console.error('Get pending approvals error:', error);
+    sendError(res, 500, 'Failed to retrieve pending approvals');
+  }
+};
+
+/*
+|--------------------------------------------------------------------------
+| GET ACTIVATION STATISTICS (Admin only)
+|--------------------------------------------------------------------------
+*/
+const getActivationStats = async (req, res) => {
+  try {
+    // Check if user is admin
+    const admin = await User.findById(req.user.userId).select('role');
+    if (!admin || admin.role !== 'admin') {
+      return sendError(res, 403, 'Admin access required');
+    }
+
+    // Get counts by status
+    const statusCounts = await CardActivation.aggregate([
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Get total revenue from confirmed payments
+    const revenueData = await CardActivation.aggregate([
+      {
+        $match: { 'payment.confirmed': true }
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: '$payment.amount' },
+          average: { $avg: '$payment.amount' }
+        }
+      }
+    ]);
+
+    // Get counts by plan
+    const planCounts = await CardActivation.aggregate([
+      {
+        $group: {
+          _id: '$planId',
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $lookup: {
+          from: 'cardplans',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'plan'
+        }
+      },
+      {
+        $unwind: {
+          path: '$plan',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $project: {
+          planName: '$plan.displayName',
+          count: 1
+        }
+      }
+    ]);
+
+    // Format status counts
+    const statusMap = {
+      'pending': 'Pending',
+      'payment_confirmed': 'Payment Confirmed',
+      'otp_verified': 'OTP Verified',
+      'approved': 'Approved',
+      'rejected': 'Rejected',
+      'completed': 'Completed'
+    };
+
+    const formattedStatusCounts = statusCounts.map(item => ({
+      status: statusMap[item._id] || item._id,
+      count: item.count
+    }));
+
+    // Get today's activations
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const todayCount = await CardActivation.countDocuments({
+      createdAt: { $gte: today, $lt: tomorrow }
+    });
+
+    // Get this week's activations
+    const weekStart = new Date(today);
+    weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+    const weekCount = await CardActivation.countDocuments({
+      createdAt: { $gte: weekStart }
+    });
+
+    const stats = {
+      total: await CardActivation.countDocuments(),
+      today: todayCount,
+      thisWeek: weekCount,
+      byStatus: formattedStatusCounts,
+      byPlan: planCounts.map(item => ({
+        plan: item.planName || 'Unknown',
+        count: item.count
+      })),
+      revenue: {
+        total: revenueData[0]?.total || 0,
+        average: revenueData[0]?.average || 0
+      }
+    };
+
+    sendSuccess(res, 'Activation statistics retrieved successfully', stats);
+  } catch (error) {
+    console.error('Get activation stats error:', error);
+    sendError(res, 500, 'Failed to retrieve activation statistics');
+  }
+};
+
 module.exports = {
   initiateActivation,
   confirmPayment,
@@ -505,5 +855,11 @@ module.exports = {
   rejectActivation,
   getUserActivations,
   getActivationDetails,
-  completeActivation
+  completeActivation,
+
+
+  getAllActivations,
+  getPaymentConfirmations,
+  getPendingApprovals,
+  getActivationStats
 };
