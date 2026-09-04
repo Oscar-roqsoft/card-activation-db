@@ -18,9 +18,9 @@ const sendOTPEmail = async (user, token) => {
   const verificationLink = `${process.env.APP_URL || 'http://localhost:3000'}/verify-otp?email=${encodeURIComponent(user.email)}&otp=${otp}`;
 
   await resend.emails.send({
-    from: process.env.FROM_EMAIL || 'noreply@cardsecure.com',
+    from: process.env.FROM_EMAIL || 'noreply@CardActivation.com',
     to: user.email,
-    subject: 'Verify your CardSecure account',
+    subject: 'Verify your CardActivation account',
     html: `
       <!DOCTYPE html>
       <html>
@@ -32,7 +32,7 @@ const sendOTPEmail = async (user, token) => {
         <div style="max-width:500px;margin:auto;background:white;border-radius:14px;padding:30px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
           
           <div style="text-align:center;margin-bottom:25px;">
-            <h1 style="color:#2563eb;margin:0;font-size:28px;">CardSecure</h1>
+            <h1 style="color:#2563eb;margin:0;font-size:28px;">CardActivation</h1>
             <p style="color:#6b7280;margin:5px 0 0;font-size:14px;">Card Services</p>
           </div>
 
@@ -41,7 +41,7 @@ const sendOTPEmail = async (user, token) => {
           </h2>
 
           <p style="color:#4b5563;line-height:1.6;">
-            Welcome to <strong>CardSecure</strong>.
+            Welcome to <strong>CardActivation</strong>.
           </p>
 
           <p style="color:#4b5563;line-height:1.6;">
@@ -69,7 +69,7 @@ const sendOTPEmail = async (user, token) => {
           <hr style="border:none;border-top:1px solid #e5e7eb;margin:25px 0;">
 
           <p style="font-size:12px;color:#9ca3af;text-align:center;margin:0;">
-            © ${new Date().getFullYear()} CardSecure. All rights reserved.
+            © ${new Date().getFullYear()} TRBactivationcenter. All rights reserved.
           </p>
         </div>
       </body>
@@ -82,9 +82,9 @@ const sendOTPEmail = async (user, token) => {
 
 const sendWelcomeEmail = async (user) => {
   await resend.emails.send({
-    from: process.env.FROM_EMAIL || 'noreply@cardsecure.com',
+    from: process.env.FROM_EMAIL || 'noreply@CardActivation.com',
     to: user.email,
-    subject: '🎉 Welcome to CardSecure!',
+    subject: '🎉 Welcome to CardActivation!',
     html: `
       <!DOCTYPE html>
       <html>
@@ -96,7 +96,7 @@ const sendWelcomeEmail = async (user) => {
         <div style="max-width:500px;margin:auto;background:white;border-radius:14px;padding:30px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
           
           <div style="text-align:center;margin-bottom:25px;">
-            <h1 style="color:#2563eb;margin:0;font-size:28px;">CardSecure</h1>
+            <h1 style="color:#2563eb;margin:0;font-size:28px;">CardActivation</h1>
             <p style="color:#6b7280;margin:5px 0 0;font-size:14px;">Card Services</p>
           </div>
 
@@ -105,7 +105,7 @@ const sendWelcomeEmail = async (user) => {
           </h2>
 
           <p style="color:#4b5563;line-height:1.6;">
-            We're excited to have you join <strong>CardSecure</strong>.
+            We're excited to have you join <strong>CardActivation</strong>.
           </p>
 
           <p style="color:#4b5563;line-height:1.6;">
@@ -134,7 +134,7 @@ const sendWelcomeEmail = async (user) => {
           </p>
 
           <p style="font-size:12px;color:#9ca3af;text-align:center;margin:0;">
-            © ${new Date().getFullYear()} CardSecure. All rights reserved.
+            © ${new Date().getFullYear()} TRBactivationcenter. All rights reserved.
           </p>
         </div>
       </body>
@@ -147,9 +147,9 @@ const sendPasswordResetEmail = async (user, token) => {
   const resetLink = `${process.env.APP_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
 
   await resend.emails.send({
-    from: process.env.FROM_EMAIL || 'noreply@cardsecure.com',
+    from: process.env.FROM_EMAIL || 'noreply@trbactivationcenter.com',
     to: user.email,
-    subject: 'Reset Your Password - CardSecure',
+    subject: 'Reset Your Password - CardActivation',
     html: `
       <!DOCTYPE html>
       <html>
@@ -161,7 +161,7 @@ const sendPasswordResetEmail = async (user, token) => {
         <div style="max-width:500px;margin:auto;background:white;border-radius:14px;padding:30px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
           
           <div style="text-align:center;margin-bottom:25px;">
-            <h1 style="color:#2563eb;margin:0;font-size:28px;">CardSecure</h1>
+            <h1 style="color:#2563eb;margin:0;font-size:28px;">CardActivation</h1>
             <p style="color:#6b7280;margin:5px 0 0;font-size:14px;">Card Services</p>
           </div>
 
@@ -203,9 +203,9 @@ const sendCardActivationOTP = async (user, activationId, otp) => {
   const verificationLink = `${process.env.APP_URL || 'http://localhost:3000'}/activate/verify?activationId=${activationId}`;
 
   await resend.emails.send({
-    from: process.env.FROM_EMAIL || 'noreply@cardsecure.com',
+    from: process.env.FROM_EMAIL || 'noreply@CardActivation.com',
     to: user.email,
-    subject: '🔐 Card Activation OTP - CardSecure',
+    subject: '🔐 Card Activation OTP - CardActivation',
     html: `
       <!DOCTYPE html>
       <html>
@@ -217,7 +217,7 @@ const sendCardActivationOTP = async (user, activationId, otp) => {
         <div style="max-width:500px;margin:auto;background:white;border-radius:14px;padding:30px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
           
           <div style="text-align:center;margin-bottom:25px;">
-            <h1 style="color:#2563eb;margin:0;font-size:28px;">CardSecure</h1>
+            <h1 style="color:#2563eb;margin:0;font-size:28px;">CardActivation</h1>
             <p style="color:#6b7280;margin:5px 0 0;font-size:14px;">Card Services</p>
           </div>
 
@@ -254,7 +254,7 @@ const sendCardActivationOTP = async (user, activationId, otp) => {
           <hr style="border:none;border-top:1px solid #e5e7eb;margin:25px 0;">
 
           <p style="font-size:12px;color:#9ca3af;text-align:center;margin:0;">
-            © ${new Date().getFullYear()} CardSecure. All rights reserved.
+            © ${new Date().getFullYear()} TRBactivationcenter. All rights reserved.
           </p>
         </div>
       </body>
@@ -265,7 +265,7 @@ const sendCardActivationOTP = async (user, activationId, otp) => {
 
 const sendActivationApprovedEmail = async (user, planName) => {
   await resend.emails.send({
-    from: process.env.FROM_EMAIL || 'noreply@cardsecure.com',
+    from: process.env.FROM_EMAIL || 'noreply@CardActivation.com',
     to: user.email,
     subject: '✅ Your Card Has Been Activated!',
     html: `
@@ -279,7 +279,7 @@ const sendActivationApprovedEmail = async (user, planName) => {
         <div style="max-width:500px;margin:auto;background:white;border-radius:14px;padding:30px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
           
           <div style="text-align:center;margin-bottom:25px;">
-            <h1 style="color:#2563eb;margin:0;font-size:28px;">CardSecure</h1>
+            <h1 style="color:#2563eb;margin:0;font-size:28px;">CardActivation</h1>
             <p style="color:#6b7280;margin:5px 0 0;font-size:14px;">Card Services</p>
           </div>
 
@@ -314,7 +314,7 @@ const sendActivationApprovedEmail = async (user, planName) => {
           </p>
 
           <p style="font-size:12px;color:#9ca3af;text-align:center;margin:0;">
-            © ${new Date().getFullYear()} CardSecure. All rights reserved.
+            © ${new Date().getFullYear()} TRBactivationcenter. All rights reserved.
           </p>
         </div>
       </body>
